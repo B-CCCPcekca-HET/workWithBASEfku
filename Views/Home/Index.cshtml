@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<br />
+
+    
+    Time @DateTime.Now <br/>
+    Domain: @System.Environment.UserDomainName <br/>
+    User: @System.Environment.UserName <br/>
+    Machine: @System.Environment.MachineName <br/>
+    UserHost: @System.Web.HttpContext.Current.Request.UserHostAddress;<br/>

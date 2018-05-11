@@ -1,0 +1,89 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color:darkgrey;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+    /*my*/
+   /* max-width:95%;
+    min-width:75%;*/
+    
+}
+
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 80px;
+}
+
+
+table {
+    
+   width:100%;
+    background-color: bisque;
+    border: 1px;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: inherit;
+    
+}
+td, tr{
+    
+    padding: 3px; /* Поля вокруг содержимого таблицы */
+    border: 1px solid black;
+    font-size:1em;/*текст в самой таблице*/
+}
+th {
+    text-align:center;
+    max-width:inherit;
+    font-size:1em;/*текст заголовкой*/
+        
+
+}
+#maindiv {
+    max-width: 95%;
+    min-width: 960px;
+    margin: 0 auto;
+    padding: 0;
+}
+/*див  редактирования  и добавления  фиксированный*/
+#fixeddiv, #fixeddiv2 {
+    position: fixed;
+    top:5%;
+    background-color:darkslategray;
+    width:60%;
+    z-index:1;
+    
+    
+}
+/*общий  блок  где  див  редактирования  и добавления*/
+#tableBlock, #tableBlock2 {
+    position:absolute;
+    width:800px;
+    
+    top:40%;
+    
+}
+/*блоки редактирования  и удаления*/
+#tedit,#tadd{
+    background-color:antiquewhite;
+    width:100%;
+}
+#loading{
+    position:center;
+  
+}
+

@@ -1,0 +1,319 @@
+﻿
+@{
+    ViewBag.Title = "Zayavki";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="~/Content/Site.css" rel="stylesheet">
+
+</head>
+<br />
+<br />
+
+
+
+<div id="fixeddiv">
+<br />
+<div id="editBlock">
+    
+    <table id="tedit" border="1" >
+        <tr><td><input type="hidden" id="editId" /></td></tr>
+        <tr><td><label>СУОН:</label><input type="text" id="editNum_insp"/>&nbsp;<label>Заявка:</label><input type="text" id="editNum_Zayavki" /></td></tr>
+        <tr><td><label>Описание:</label> <textarea id="editOpisanie" cols="150" rows="3"></textarea></td></tr>
+        <tr><td><label>Дата начала:</label><input type="datetime-local" id="editData_start" /><label>Дата окончания: </label><input type="datetime-local" id="editData_end" /></td></tr>
+        <tr><td><label>Заявитель:</label><input type="text" id="editZayavitel" /><label>Исполнитель: </label><input type="text" id="editIspolnitel" /></td></tr>
+        <tr><td><label>Тип заявки: </label><input type="text" id="editType_zayavki" /></td></tr>
+    </table>
+
+    <button id="editZayavka">Сохранить</button>
+</div>
+
+<div id="createBlock">
+        <table id="tadd" border="1">
+        <!---<tr><td><input type="hidden" id="addId" /></td></tr>-->
+        <tr><td><label>СУОН: </label><input size ="20" type="text" id="addNum_insp" /> &nbsp;<label>Заявка:</label><input size="100" type="text" id="addNum_Zayavki"  /></td></tr>
+        <tr><td><label>Описание: </label><textarea id="addOpisanie" cols="150" rows="3"></textarea></td></tr>
+        <tr><td><label>Дата начала: </label><input type="datetime-local" id="addData_start" /><label>Дата окончания: </label> <input type="datetime-local" id="addData_end" /></td></tr>
+        <tr><td><label>Заявитель: </label><input type="text" id="addZayavitel" /></td></tr>
+        <tr><td><label>Исполнитель: </label><input type="text" id="addIspolnitel" /></td></tr>
+        <tr><td><label>Тип заявки: </label><input value="0" type="text" id="addType_zayavki" /></td></tr>
+    </table>
+    <br />
+    <button id="addZayavka">Добавить</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#top">↑↑↑ UP ↑↑↑</a>
+    <br />
+</div>
+    
+</div>
+
+<br /><br />
+<div id="tableBlock"></div>
+
+<div  align="center" id="loading"><img src='@Url.Content("~/Content/loading_spinner.gif")'></div>
+
+
+
+
+
+
+
+    @section scripts
+    {
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+           // GetAllZayavki();
+            BackZayavki()
+
+            $("#editZayavka").click(function (event) {
+                event.preventDefault();
+                EditZayavka();
+            });
+
+            $("#addZayavka").click(function (event) {
+                event.preventDefault();
+                AddZayavka();
+            });
+
+         
+
+        });
+        //scroll top page плавно
+        $("a[href='#top']").click(function () {
+            $("html, body").animate({ scrollTop: 0 }, "fast");
+            return false;
+        });
+        //end scroll
+
+
+        //back zayavki
+        var page = 0;
+        var _inCallback = false;
+
+        var i  = 0; 
+      
+        function BackZayavki() {
+            $("#createBlock").css('display', 'block');
+            $("#editBlock").css('display', 'none');
+            if (page > -1 && !_inCallback) {
+                _inCallback = true;
+
+                $.ajax({
+                    //url: '/api/zayavkis/back/' + page,
+                    url: '/api/getinsp/' + page,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (data.length > 0) {
+                                              
+                            $('div#loading').show();
+                            var strResult = "<table border=2px><th> N п\п </th><th>СУОН</th><th>ЗАЯВКА</th><th>Описание</th><th>Дата начала</th><th>Дата окончания</th><th>Заявитель</th><th>Исполнитель</th><th>Тип заявки</th><th></th><th></th>";
+                            $.each(data, function (index, zayavka) {
+                                i++;
+                                strResult += "<tr><td>" + i + "</td><td> " + zayavka.Num_insp + "</td><td>" + zayavka.Num_zayavki +
+                                    "</td><td>" + zayavka.Opisanie + "</td><td> " + zayavka.Data_start + "</td> <td>" +
+                                    zayavka.Data_end + "</td><td> " + zayavka.Zayavitel + "</td><td> " + zayavka.Ispolnitel +
+                                    "</td><td> " + zayavka.Type_zayavki +
+                                    "</td><td><a id='editItem' data-item='" + zayavka.Id + "' onclick='EditItem(this);' >Редактировать</a></td>" +
+                                    "<td><a id='delItem' data-item='" + zayavka.Id + "' onclick='DeleteItem(this);' >Удалить</a></td></tr>";
+                            });
+                            strResult += "</table>";
+                            $('div#loading').hide();
+                            $("#tableBlock").append(strResult);
+                            
+                            page++;
+                        }
+                        else {
+                            page = -1;
+                        }
+                        _inCallback = false;
+
+
+                    }
+
+
+                });
+            }
+
+        }
+        //добавить при прокрутке вниз до упора
+        $(window).scroll(function () {
+            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+
+                BackZayavki();
+            }
+        });
+
+       
+        // Получение всех заявок по ajax-запросу
+        var page2 = 0;
+        function GetAllZayavki() {
+
+            $("#createBlock").css('display', 'block');
+            $("#editBlock").css('display', 'none');
+            $.ajax({
+               // url: '/api/zayavkis',//работает но выводит без сортировки
+                url: '/api/getinsp/'+page2,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    WriteResponse(data);///////нет фильтрации по инспекциям!!!!
+                   // BackZayavki();
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        
+        // Добавление новой заявки
+        function AddZayavka() {
+            // получаем значения для добавляемой заявки
+            var zayavka = {
+                Num_insp: $('#addNum_insp').val(),
+                NumZayavki: $('#addNum_Zayavki').val(),
+                Opisanie: $('#addOpisanie').val(),
+                Data_start: $('#addData_start').val(),
+                Data_end: $('#addData_end').val(),
+                Zayavitel: $('#addZayavitel').val(),
+                Ispolnitel: $('#addIspolnitel').val(),
+                Type_zayavki: $('#addType_zayavki').val()
+            };
+
+            $.ajax({
+                url: '/api/zayavkis/',
+                type: 'POST',
+                data: JSON.stringify(zayavka),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllZayavki();
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        // Удаление
+        function DeleteZayavka(id) {
+
+            var q = confirm("Удалить заяку  без возможности восстановления?")
+            if (q == true) {
+
+
+                $.ajax({
+                    url: '/api/zayavkis/' + id,
+                    type: 'DELETE',
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        GetAllZayavki();
+                       // BackZayavki(); 
+                    },
+                    error: function (x, y, z) {
+                        alert(x + '\n' + y + '\n' + z);
+                    }
+                });
+            } else { return false }
+           
+        }
+        // редактирование
+        function EditZayavka() {
+            var id = $('#editId').val()
+            // получаем новые значения для редактируемой заявки
+            var zayavka = {
+                Id: $('#editId').val(),
+                Num_insp: $('#editNum_insp').val(),
+                Num_Zayavki: $('#editNum_Zayavki').val(),
+                Opisanie: $('#editOpisanie').val(),
+                Data_start: $('#editData_start').val(),
+                Data_end: $('#editData_end').val(),
+                Zayavitel: $('#editZayavitel').val(),
+                Ispolnitel: $('#editIspolnitel').val(),
+                Type_zayavki: $('#editType_zayavki').val()
+            };
+            $.ajax({
+                url: '/api/zayavkis/' + id,
+                type: 'PUT',
+                data: JSON.stringify(zayavka),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllZayavki();
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        var i2 = 0;
+        // вывод полученных данных на экран устаревший вывод не показывает счетчика заявок
+        function WriteResponse(zayavki) {
+            var i2 = 0;
+            $('div#loading').show();
+            var strResult = "<table><th>№ п/п</th><th>СУОН</th><th>ЗАЯВКА</th><th>Описание</th><th>Дата начала</th><th>Дата окончания</th><th>Заявитель</th><th>Исполнитель</th><th>Тип заявки</th><th></th><th></th>";
+            $.each(zayavki, function (index, zayavka) {
+                i2++;
+                strResult += "<tr><td>" + i2 + "</td><td> " + zayavka.Num_insp + "</td><td>" + zayavka.Num_zayavki +
+                    "</td><td>" + zayavka.Opisanie + "</td><td> " + zayavka.Data_start + "</td> <td>" +
+                    zayavka.Data_end + "</td><td> " + zayavka.Zayavitel + "</td><td> " + zayavka.Ispolnitel +
+                    "</td><td> " + zayavka.Type_zayavki+
+                "</td><td><a id='editItem' data-item='" + zayavka.Id + "' onclick='EditItem(this);' >Редактировать</a></td>" +
+                    "<td><a id='delItem' data-item='" + zayavka.Id + "' onclick='DeleteItem(this);' >Удалить</a></td></tr>";
+            });
+            strResult += "</table>";
+            $('div#loading').hide();
+            $("#tableBlock").html(strResult);
+
+
+        }
+
+        // обработчик удаления
+        function DeleteItem(el) {
+            // получаем id удаляемого объекта
+            var id = $(el).attr('data-item');
+            DeleteZayavka(id);
+        }
+        // обработчик редактирования
+        function EditItem(el) {
+            // получаем id редактируемого объекта
+            var id = $(el).attr('data-item');
+            GetZayavki(id);
+        }
+        // вывод данных редактируемой заявки в поля для редактирования
+        function ShowZayavka(zayavka) {
+            if (zayavka != null) {
+                $("#createBlock").css('display', 'none');
+                $("#editBlock").css('display', 'block');
+
+                $("#editId").val(zayavka.Id);
+                $("#editNum_insp").val(zayavka.Num_insp);
+                $("#editNum_Zayavki").val(zayavka.Num_zayavki);
+                $("#editOpisanie").val(zayavka.Opisanie);
+                $("#editData_start").val(zayavka.Data_start);
+                $("#editData_end").val(zayavka.Data_end);
+                $("#editZayavitel").val(zayavka.Zayavitel);
+                $("#editIspolnitel").val(zayavka.Ispolnitel);
+                $("#editType_zayavki").val(zayavka.Type_zayavki);
+            }
+            else {
+                alert("Такой  заяки не существует!");
+            }
+        }
+        // запрос заявки на редактирование
+        function GetZayavki(id) {
+            $.ajax({
+                url: '/api/zayavkis/' + id,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    ShowZayavka(data);
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        </script>
+}
+
+

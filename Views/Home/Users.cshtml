@@ -1,0 +1,283 @@
+﻿
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="~/Content/Site.css" rel="stylesheet">
+
+</head>
+
+<div id="fixeddiv2">
+    <br />
+    <div id="editBlock2">
+
+        <table id="tedit2" border="1">
+            <tr><td><input type="hidden" id="editId" /></td></tr>
+            <tr><td><label>User:</label><input type="text" id="editADuser" />&nbsp;<label>№ СУОН</label><input type="text" id="editNum_insp" /></td></tr>
+            <tr><td><label>Отображаемое имя:</label><textarea id="editFIO_User" cols="150" rows="1"></textarea></td></tr>
+            <tr><td><label>Разрешения</label><input type="text" id="edituser_permission" /></td></tr>
+        </table>
+        <br/>
+        <button id="editUser">Сохранить</button>
+    </div>
+
+    <div id="createBlock2">
+        <table id="tadd2" border="1">
+            <!---<tr><td><input type="hidden" id="addId" /></td></tr>-->
+            <tr><td><input type="hidden" id="addId" /></td></tr>
+            <tr><td><label>User:</label><input type="text" id="addADuser" />&nbsp;<label>№ СУОН</label><input type="text" id="addNum_insp" /></td></tr>
+            <tr><td><label>Отображаемое имя:</label> <textarea id="addFIO_User" cols="150" rows="1"></textarea></td></tr>
+            <tr><td><label>Разрешения</label><input type="text" id="adduser_permission" /></td></tr>
+        </table>
+        <br />
+        <button id="addUser">Добавить</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a    href="#top" ><b>↑↑↑ UP ↑↑↑</b></a>
+        <br />
+    </div>
+
+</div>
+
+<br /><br />
+<div id="tableBlock2"></div>
+
+<div align="center" id="loading"><img src='@Url.Content("~/Content/loading_spinner.gif")'></div>
+@section scripts
+    {
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+           
+            BackUser()
+
+            $("#editUser").click(function (event) {
+                event.preventDefault();
+                EditUser();
+            });
+
+            $("#addUser").click(function (event) {
+                event.preventDefault();
+                AddUser();
+            });
+
+
+
+        });
+        //scroll top page плавно
+        $("a[href='#top']").click(function () {
+            $("html, body").animate({ scrollTop: 0 }, "fast");
+            return false;
+        });
+        //end scroll
+        
+        var page = 0;
+        var _inCallback = false;
+
+        var i = 0;
+        
+        function BackUser() {
+            $("#createBlock2").css('display', 'block');
+            $("#editBlock2").css('display', 'none');
+            if (page > -1 && !_inCallback) {
+                _inCallback = true;
+
+                $.ajax({
+                    //url: '/api/zayavkis/back/' + page,
+                    // url: '/api/allusers/',
+                    url: '/api/userslazy/'+page,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+
+
+                        // WriteResponse(data);
+                        if (data.length > 0) {
+
+                            $('div#loading').show();
+                            var strResult = "<table border=2px ><th> N п\п </th> <th>User</th> <th>N СУОН</th> <th>Отображаемое имя</th> <th>Роль</th> <th></th> <th></th>";
+                            $.each(data, function (index, user) {
+                                
+                                i++;
+                                strResult += "<tr><td>" + i + "</td><td> " + user.ADuser + "</td><td>" + user.Num_insp +
+                                    "</td><td>" + user.FIO_User + "</td><td> " + user.user_permission + "</td> <td>" +
+                                    "</td><td><a id='editItem' data-item='" + user.Id + "' onclick='EditItem(this);' >Редактировать</a></td>" +
+                                    "<td><a id='delItem' data-item='" + user.Id + "' onclick='DeleteItem(this);' >Удалить</a></td></tr>";
+                            });
+                            strResult += "</table>";
+                            $('div#loading').hide();
+                            $("#tableBlock2").append(strResult);
+
+                            page++;
+                        }
+                        else {
+                            page = -1;
+                        }
+                        _inCallback = false;
+                    }
+                });
+            }
+
+        }
+       
+        
+        //добавить при прокрутке вниз до упора
+        $(window).scroll(function () {
+            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+
+                BackUser();
+            }
+        });
+
+        // Получение всех users по ajax-запросу
+        function GetAllUsers() {
+
+            $("#createBlock2").css('display', 'block');
+            $("#editBlock2").css('display', 'none');
+            $.ajax({
+                url: ' /api/allUsers',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    WriteResponse(data);
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        // Добавление новой заявки
+        function AddUser() {
+            // получаем значения для добавляемой заявки
+            var user = {
+                ADuser: $('#addADuser').val(),
+                Num_insp: $('#addNum_insp').val(),
+                FIO_User: $('#addFIO_User').val(),
+                user_permission: $('#adduser_permission').val()
+
+            };
+
+            $.ajax({
+                url: '/api/UsersFKUs',
+                type: 'POST',
+                data: JSON.stringify(user),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllUsers();
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        // Удаление
+        function DeleteUser(id) {
+
+            var q = confirm("Удалить   без возможности восстановления?")
+            if (q == true) {
+
+
+                $.ajax({
+                    url: '/api/UsersFKUs/' + id,
+                    type: 'DELETE',
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        GetAllUsers();
+                    },
+                    error: function (x, y, z) {
+                        alert(x + '\n' + y + '\n' + z);
+                    }
+                });
+            } else { return false }
+
+        }
+        // редактирование
+        function EditUser() {
+            var id = $('#editId').val()
+            // получаем новые значения для редактируемой заявки
+            var user = {
+                Id: $('#editId').val(),
+                ADuser: $('#editADuser').val(),
+                Num_insp: $('#editNum_insp').val(),
+                FIO_User: $('#editFIO_User').val(),
+                user_permission: $('#edituser_permission').val()
+
+            };
+            $.ajax({
+                url: '/api/UsersFKUs/' + id,
+                type: 'PUT',
+                data: JSON.stringify(user),
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    GetAllUsers();
+                },
+                error: function (x, y, z) {
+                    alert(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        // вывод полученных данных на экран  
+        
+        function WriteResponse(users) {
+            var i = 0;
+            $('div#loading').show();
+            var strResult = "<table border=2px><td>N п\\п</td> <td>User</td> <td>№ СУОН</td> <td>Выводимое имя</td> <td>Роль</td> <td></td><td></td>";
+            $.each(users, function (index, user) {
+                i++;
+                strResult += "<tr><td>" + i + "</td><td> " + user.ADuser + "</td><td>" + user.Num_insp +
+                    "</td><td>" + user.FIO_User + "</td><td> " + user.user_permission + "</td> <td>" +
+                    "</td><td><a id='editItem' data-item='" + user.Id + "' onclick='EditItem(this);' >Редактировать</a></td>" +
+                    "<td><a id='delItem' data-item='" + user.Id + "' onclick='DeleteItem(this);' >Удалить</a></td></tr>";
+            });
+            strResult += "</table>";
+            $('div#loading').hide();
+            $("#tableBlock2").html(strResult);
+
+
+        }
+        // обработчик удаления
+        function DeleteItem(el) {
+                    // получаем id удаляемого объекта
+                    var id = $(el).attr('data-item');
+                    DeleteUser(id);
+                }
+        // обработчик редактирования
+        function EditItem(el) {
+                    // получаем id редактируемого объекта
+                    var id = $(el).attr('data-item');
+                    GetUsersFKUs(id);
+                }
+        // вывод данных редактируемой заявки в поля для редактирования
+        function ShowUser(user) {
+                    if (user != null) {
+                        $("#createBlock2").css('display', 'none');
+                        $("#editBlock2").css('display', 'block');
+
+                        $("#editId").val(user.Id);
+                        $("#editADuser").val(user.ADuser);
+                        $("#editNum_insp").val(user.Num_insp);
+                        $("#editFIO_User").val(user.FIO_User);
+                        $("#edituser_permission").val(user.user_permission);
+                        
+                    }
+                    else {
+                        alert("Такой записи не существует!");
+                    }
+                }
+        // запрос заявки на редактирование
+        function GetUsersFKUs(id) {
+                    $.ajax({
+                        url: '/api/UsersFKUs/' + id,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            ShowUser(data);
+                        },
+                        error: function (x, y, z) {
+                            alert(x + '\n' + y + '\n' + z);
+                        }
+                    });
+                }
+</script>
+}
